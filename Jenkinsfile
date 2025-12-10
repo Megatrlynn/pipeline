@@ -8,6 +8,13 @@ pipeline {
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                echo "Cloning the repository manually..."
+                bat 'git clone https://github.com/Megatrlynn/pipeline.git .'
+            }
+        }
+
         stage('Build') {
             steps {
                 echo "Building the project..."
@@ -32,7 +39,7 @@ pipeline {
                 script {
                     // Use Docker TCP endpoint to avoid context issues
                     docker.withServer('tcp://localhost:2375') {
-                        dockerImage = docker.build("${DOCKER_IMAGE}:latest")
+                        def dockerImage = docker.build("${DOCKER_IMAGE}:latest")
                         docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
                             dockerImage.push('latest')
                         }
