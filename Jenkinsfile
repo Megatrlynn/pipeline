@@ -11,7 +11,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Building the project..."
-                sh 'ls -la'   // use bat 'dir' if Windows agent
+                bat 'dir'   // Windows agent
             }
         }
 
@@ -27,19 +27,15 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build and Push Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${DOCKER_IMAGE}:latest")
-                }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        dockerImage.push('latest')
+                    // Use Docker TCP endpoint to avoid context issues
+                    docker.withServer('tcp://localhost:2375') {
+                        dockerImage = docker.build("${DOCKER_IMAGE}:latest")
+                        docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                            dockerImage.push('latest')
+                        }
                     }
                 }
             }
@@ -47,8 +43,8 @@ pipeline {
 
         stage('Deploy to Local Docker Host') {
             steps {
-                sh '''
-                    docker rm -f my-web-app || true
+                bat '''
+                    docker rm -f my-web-app || exit 0
                     docker run -d --name my-web-app -p 8080:80 username/my-web-app:latest
                 '''
             }
