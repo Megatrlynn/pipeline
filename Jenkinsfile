@@ -67,7 +67,7 @@ pipeline {
                 bat """
                     docker stop my-web-app || echo "Container not running..."
                     docker rm -f my-web-app || echo "No container to remove..."
-                    docker run -d --name my-web-app -p 8080:80 ${DOCKER_IMAGE}:latest
+                    docker run -d --name my-web-app -p 8090:80 ${DOCKER_IMAGE}:latest
                 """
             }
         }
