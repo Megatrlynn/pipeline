@@ -10,8 +10,16 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "Cloning the repository manually..."
-                bat 'git clone https://github.com/Megatrlynn/pipeline.git .'
+                echo "Cloning the repository if it doesn't exist..."
+                bat '''
+                if not exist ".git" (
+                    git clone https://github.com/Megatrlynn/pipeline.git .
+                ) else (
+                    echo Repository already exists. Skipping clone.
+                    git fetch --all
+                    git reset --hard origin/main
+                )
+                '''
             }
         }
 
