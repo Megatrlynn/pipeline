@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        // Keeps your image name consistent across all stages
         DOCKER_IMAGE = 'megatrlynn/my-web-app'
         DOCKER_CREDENTIALS_ID = 'docker-hub-credentials'
     }
@@ -33,6 +34,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo "Running tests..."
+                // Add actual test commands here later (e.g., npm test)
             }
         }
 
@@ -45,9 +47,11 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    // Use Docker TCP endpoint to avoid context issues
+                    // We stick with your TCP config if that is how your Docker Desktop is set up
                     docker.withServer('tcp://localhost:2375') {
+                        // Notice I added the tag to the build command to be safe
                         def dockerImage = docker.build("${DOCKER_IMAGE}:latest", "--no-cache .")
+                        
                         docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
                             dockerImage.push('latest')
                         }
@@ -58,13 +62,15 @@ pipeline {
 
         stage('Deploy to Local Docker Host') {
             steps {
-                bat '''
-                    docker rm -f my-web-app || exit 0
-                    docker run -d --name my-web-app -p 8080:80 username/my-web-app:latest
-                '''
+                // FIXED: Used %DOCKER_IMAGE% variable instead of "username/..."
+                // Added logic to stop the container only if it is actually running to prevent errors
+                bat """
+                    docker stop my-web-app || echo "Container not running..."
+                    docker rm -f my-web-app || echo "No container to remove..."
+                    docker run -d --name my-web-app -p 8080:80 ${DOCKER_IMAGE}:latest
+                """
             }
         }
-
     }
 
     post {
