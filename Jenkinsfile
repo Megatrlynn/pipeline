@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'username/my-web-app'
+        DOCKER_IMAGE = 'megatrlynn/my-web-app'
         DOCKER_CREDENTIALS_ID = 'docker-hub-credentials'
     }
 
