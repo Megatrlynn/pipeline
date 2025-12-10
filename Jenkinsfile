@@ -47,7 +47,7 @@ pipeline {
                 script {
                     // Use Docker TCP endpoint to avoid context issues
                     docker.withServer('tcp://localhost:2375') {
-                        def dockerImage = docker.build("${DOCKER_IMAGE}:latest")
+                        def dockerImage = docker.build("${DOCKER_IMAGE}:latest", "--no-cache .")
                         docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
                             dockerImage.push('latest')
                         }
